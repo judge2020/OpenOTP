@@ -58,7 +58,7 @@ class ClientAgent(QueuedConnectionManager):
         datagram.addServerHeader(channel, channel, CONTROL_REMOVE_CHANNEL)
         self.cw.send(datagram, self.tcp_conn)
 
-    ''' TODO: Work in progress got lazy didn't finish, too much work for now... '''
+    # TODO: Work in progress got lazy didn't finish, too much work for now...
     def allocate_new_channel(self): # TODO: when client disconnects, remove its channel and reset the id values.
         self.channel_allocated = UniqueIdAllocator(1100, 1500).allocate()
         if self.channel_allocated > 1000000000:
