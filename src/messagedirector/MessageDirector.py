@@ -1,5 +1,4 @@
 from panda3d.core import *
-from pandac.PandaModules import *
 from direct.task.TaskManagerGlobal import *
 from direct.task.Task import Task
 from direct.distributed.PyDatagram import PyDatagram

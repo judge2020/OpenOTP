@@ -1,6 +1,6 @@
 # OpenOTP
 * OpenOTP is a re-implementation of Disney's OTP server, targeted for multiplayer games, and written in c/c++ and/or python.
-* OpenOTP is open-source and is free to use.
+* OpenOTP iS is free to use.
 
 # MessageDirector:
 * The MessageDirector is perhapse the most important key component of the server, this server manages connections and their channels. 

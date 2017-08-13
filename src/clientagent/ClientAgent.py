@@ -1,11 +1,18 @@
+#InfinityOTP ClientAgent, v1.0.0 by Infinity, Base OTP goes to Toontown Legacy
+
 from panda3d.core import *
-from pandac.PandaModules import *
 from direct.task.TaskManagerGlobal import *
 from direct.task.Task import Task
 from direct.distributed.PyDatagram import PyDatagram
 from direct.distributed.PyDatagramIterator import PyDatagramIterator
 from src.util.types import *
 import threading
+from direct.distributed.ConnectionRepository import ConnectionRepository
+from datetime import datetime
+import time
+import sched
+import random
+import warnings
 
 class ClientAgent(QueuedConnectionManager):
     
@@ -118,15 +125,155 @@ class ClientAgent(QueuedConnectionManager):
         
         di = PyDatagramIterator(datagram)
         msg_type = di.getUint16()
-        print msg_type # debug
+        print "Got Tewtow msgType: %s" % (msg_type) # debug
         
         if msg_type == CLIENT_HEARTBEAT:
+            print "Server recieved Heartbeat."
             self.handle_client_heartbeat(self.connection, di)
         elif msg_type == CLIENT_DISCONNECT:
+            print "A Tewtow User  Logged Off the Server: %s" % (self.connection)
             self.remove_connection_instance(self.connection)
+        elif msg_type == CLIENT_LOGIN_2:
+            ## Client is asking for login... handle it.
+            ##TODO: This should be validated from server.
+            print "A Tewtow User Logged Onto the Server.: %s" % (self.connection)
+            self.handle_client_login(self.connection, di)
+        elif msg_type == CLIENT_GET_SHARD_LIST:
+            ## Client is asking for our districts.. handle it.
+            self.handle_get_shard_list(self.connection, di)
+        elif msg_type == CLIENT_GET_AVATARS:
+            ## Client is asking for his avatars.. handle it.
+            print "Getting %s Tews.." % (self.connection)
+            self.handle_get_avatars(self.connection, di)
+        elif msg_type == CLIENT_SET_AVATAR:
+            ## Client is asking for AVATAR info, handle it.
+            print "%s Picked A Tew.. Setting Stuff Up." % (self.connection)
+            self.handle_set_avatar(self.connection, di)
+
+        elif msg_type == CLIENT_CREATE_AVATAR:
+            print "Someone Created a Tew!"
+            self.CLIENT_CREATE_AVATAR(self.connection, di)
+
+        elif msg_type == CLIENT_SET_NAME_PATTERN:
+            print "Someone Did a name for a Tew!"
+            self.CLIENT_SET_NAME_PATTERN(self.connection, di)
+
         else:
-            print ("Recieved an unexpected datagram: %s from: %s" % (msg_type, str(self.connection)))
-	
+            print ("Oh Shit! Recieved an unexpected Datagram: %s from: %s" % (msg_type, str(self.connection)))
+
+    def handle_set_avatar(self, connection, di):
+            ## Send the client HIS character's info.
+            ## TODO: NOT SEND STATIC INFO
+
+            datagram = PyDatagram()
+            #datagram.addUint16(0) #dummy 
+
+            datagram.addUint32(CLIENT_GET_AVATAR_DETAILS_RESP) #msgType
+
+            datagram.addUint32(1) #avatarId (uint32)
+            datagram.addUint8(0) #returnCode (uint8)
+
+            ## NOW, HERE COMES THE GOOD PART
+            datagram.addString("t\x00\x02\x02\x01\x00\x00\x00\x00\x00\x01\22\x00\22\22") #setDNAString
+            datagram.addInt16(1000) #setMaxBankMoney
+            datagram.addInt16(0) #setMoney
+            datagram.addInt16(40) #setMaxMoney
+            datagram.addInt16(15) #setMaxHP
+            datagram.addInt16(15) #setHP      
+
+            self.cw.send(datagram, connection)
+
+
+
+
+
+    def CLIENT_CREATE_AVATAR(self, connection, di):
+            datagram = PyDatagram()
+            datagram.addUint16(CLIENT_CREATE_AVATAR_RESP)
+            datagram.addUint16(0)
+            datagram.addUint8(0)
+            datagram.addUint32(1)
+            self.cw.send(datagram, connection)
+            
+            
+    def CLIENT_SET_NAME_PATTERN(self, connection, di):
+            datagram = PyDatagram()
+            datagram.addUint16(CLIENT_SET_NAME_PATTERN_ANSWER)
+            datagram.addUint32(1)
+            datagram.addUint8(0)
+            self.cw.send(datagram, connection)
+
+
+    def handle_get_shard_list(self, connection, di):	
+            ## Send the client OUR Districts! (TODO)
+            datagram = PyDatagram()
+            #datagram.addUint16(0) #dummy
+
+            datagram.addUint16(CLIENT_GET_SHARD_LIST_RESP) #msgType
+
+            datagram.addUint16(1) #how many districts are on?
+            datagram.addUint32(1) #district id
+            datagram.addString("TestTown") #district name
+            datagram.addUint32(300) #district max. population.
+
+            self.cw.send(datagram, connection)
+
+    def handle_get_avatars(self, connection, di):    
+            ## Send the client OUR AVATARS (TODO)
+            datagram = PyDatagram()
+            #datagram.addUint16(0) #dummy
+
+            datagram.addUint16(CLIENT_GET_AVATARS_RESP) #msgType
+
+            datagram.addUint8(0) #ReturnCode (uint8)
+            datagram.addUint16(1) #How many toons does this user have? (uint16)
+            
+            ## lets give our client a avatar.
+            datagram.addUint32(1) #avNum (uint32)
+            datagram.addString('Toon') #avNames 1 (string)
+            datagram.addString('') #avNames 2 (string)
+            datagram.addString('') #avNames 3 (string)
+            datagram.addString('') #avNames 4 (string)
+            datagram.addString("t\x00\x02\x02\x01\x00\x00\x00\x00\x00\x01\22\x00\22\22") #avDNA (hex) 
+            datagram.addUint8(1) #avPosition (uint8)
+            datagram.addUint8(1) #avName pos (uint8)
+
+            self.cw.send(datagram, connection)
+
+
+    def handle_client_login(self, connection, di):
+            ## Send the client OUR LOGIN response. (TODO)
+            datagram = PyDatagram()
+            #datagram.addUint16(0) #dummy
+
+            datagram.addUint32(CLIENT_LOGIN_2_RESP) #msgType
+
+            datagram.addUint8(0) #returnCode
+            datagram.addString("") #errorString
+            datagram.addString("dev") #username
+            datagram.addUint8(1) #secretChatAllowed
+            datagram.addUint8(1) # Client is always paid.
+            datagram.addInt32(10000) # minutesRemaining, TODO!
+
+
+            self.cw.send(datagram, connection)
+
+
+    def isPaid(self):
+        if base.config.GetBool('force-paid', 0):
+            return 1
+        
+        return self._ToontownClientRepository__isPaid
+        
+        
+    def freeTimeLeft(self):
+        if self.freeTimeExpiresAt == -1 or self.freeTimeExpiresAt == 0:
+            return 0
+        
+        secsLeft = self.freeTimeExpiresAt - time.time()
+        return max(0, secsLeft)
+
+
     def handle_client_heartbeat(self, connection, di):
 		try:
 			taskMgr.remove(self.new_heartbeat)
