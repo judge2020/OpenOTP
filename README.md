@@ -1,5 +1,5 @@
 # OpenOTP
-* OpenOTP is a re-implementation of Disney's OTP server, targeted for multiplayer games, and written in c/c++ and/or python.
+* OpenOTP is a re-implementation of Disney's OTP server, targeted for Toontown Online in 2003, and written in c/c++ and/or python.
 * OpenOTP iS is free to use.
 
 # MessageDirector:
@@ -22,3 +22,8 @@
 # EventLogger:
 * The EventLogger logs certain interesting events, the event logger does not log everything!
 * Lets take toontown for example, if an avatar sends a field update for an unknown object or an invalid field, the event logger will log that event.
+
+
+# Datagrams:
+* Datagrams are ESSENTIAL to launching a game of Toontown. If not programmed in, you will not be able to work with an OTP for Toontown.
+* Fortunately, this OTP (and mostly any other TTO OTP) includes ***most*** of the Datagrams needed. The rest will be added in no time. Stay TOONed!
