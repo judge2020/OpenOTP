@@ -27,3 +27,7 @@
 *.out
 *.app
 *.sh
+
+
+# PPython path
+PPYTHON_PATH.txt
